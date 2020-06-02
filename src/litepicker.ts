@@ -391,7 +391,7 @@ export class Litepicker extends Calendar {
           inclusivity = '()';
         }
 
-        const booked = this.options.bookedDays
+        let booked = this.options.bookedDays
           .filter((d) => {
             if (d instanceof Array) {
               return d[0].isBetween(this.datePicked[0], this.datePicked[1], inclusivity)
@@ -400,6 +400,14 @@ export class Litepicker extends Calendar {
 
             return d.isBetween(this.datePicked[0], this.datePicked[1]);
           }).length;
+
+        if (!booked && this.datePicked[0].getDate() !== this.datePicked[1].getDate()) {
+          const startDate = this.datePicked[0].format(this.options.bookedDaysFormat);
+          const endDate = this.datePicked[1].format(this.options.bookedDaysFormat);
+          const startDay = this.options.days[startDate];
+          const endDay = this.options.days[endDate];
+          booked = endDay.firstSlotBooked || startDay.lastSlotBooked;
+        }
 
         const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
           && this.datePicked.length === 1;
