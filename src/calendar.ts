@@ -45,6 +45,7 @@ export class Calendar {
 
     bookedDaysFormat: 'YYYY-MM-DD',
     bookedDays: [],
+    days: [],
     disallowBookedDaysInRange: false,
     bookedDaysInclusivity: '[]',
     anyBookedDaysAsCheckout: false,
@@ -536,8 +537,13 @@ export class Calendar {
         || (this.datePicked.length === 1 && isBookedBefore && booked)
         || (this.datePicked.length === 1 && isBookedBefore && isCheckInAndCheckOut);
 
-      const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
-        && this.datePicked.length === 1;
+      // const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
+      //  && this.datePicked.length === 1;
+      const anyBookedDaysAsCheckout = true;
+
+      if (booked) {
+        day.classList.add(style.isPartiallyBooked);
+      }
 
       if (shouldBooked && !anyBookedDaysAsCheckout) {
         day.classList.add(style.isBooked);
