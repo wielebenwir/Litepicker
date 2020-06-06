@@ -43,6 +43,11 @@ export class Calendar {
     disallowLockDaysInRange: false,
     lockDaysInclusivity: '[]',
 
+    holidaysFormat: 'YYYY-MM-DD',
+    holidays: [],
+    disallowHolidaysInRange: false,
+    holidaysInclusivity: '[]',
+
     bookedDaysFormat: 'YYYY-MM-DD',
     bookedDays: [],
     days: [],
@@ -484,6 +489,18 @@ export class Calendar {
       day.classList.add(style.isLocked);
     }
 
+    if (this.options.selectForward
+      && this.datePicked.length === 1
+      && date.isBefore(this.datePicked[0])) {
+      day.classList.add(style.isHoliday);
+    }
+
+    if (this.options.selectBackward
+      && this.datePicked.length === 1
+      && date.isAfter(this.datePicked[0])) {
+      day.classList.add(style.isHoliday);
+    }
+
     if (this.options.lockDays.length) {
       const locked = this.options.lockDays
         .filter((d) => {
@@ -496,6 +513,21 @@ export class Calendar {
 
       if (locked) {
         day.classList.add(style.isLocked);
+      }
+    }
+
+    if (this.options.holidays.length) {
+      const holiday = this.options.holidays
+        .filter((d) => {
+          if (d instanceof Array) {
+            return date.isBetween(d[0], d[1], this.options.holidaysInclusivity);
+          }
+
+          return d.isSame(date, 'day');
+        }).length;
+
+      if (holiday) {
+        day.classList.add(style.isHoliday);
       }
     }
 

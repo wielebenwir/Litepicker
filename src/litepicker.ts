@@ -39,6 +39,13 @@ export class Litepicker extends Calendar {
       );
     }
 
+    if (this.options.holidays.length) {
+      this.options.holidays = DateTime.convertArray(
+        this.options.holidays,
+        this.options.holidaysFormat,
+      );
+    }
+
     if (this.options.bookedDays.length) {
       this.options.bookedDays = DateTime.convertArray(
         this.options.bookedDays,
@@ -310,6 +317,12 @@ export class Litepicker extends Calendar {
       && this.datePicked.length === 2;
   }
 
+  private shouldCheckHoliays() {
+    return this.options.disallowHolidaysInRange
+      && this.options.holidays.length
+      && this.datePicked.length === 2;
+  }
+
   private shouldCheckBookedDays() {
     return this.options.disallowBookedDaysInRange
       && this.options.bookedDays.length
@@ -347,6 +360,10 @@ export class Litepicker extends Calendar {
         return;
       }
 
+      if (target.classList.contains(style.isHoliday)) {
+        return;
+      }
+
       if (target.classList.contains(style.isBooked)) {
         return;
       }
@@ -376,6 +393,27 @@ export class Litepicker extends Calendar {
           }).length;
 
         if (locked) {
+          this.datePicked.length = 0;
+
+          if (typeof this.options.onError === 'function') {
+            this.options.onError.call(this, 'INVALID_RANGE');
+          }
+        }
+      }
+
+      if (this.shouldCheckHoliays()) {
+        const inclusivity = this.options.holidaysInclusivity;
+        const holiday = this.options.holidays
+          .filter((d) => {
+            if (d instanceof Array) {
+              return d[0].isBetween(this.datePicked[0], this.datePicked[1], inclusivity)
+                || d[1].isBetween(this.datePicked[0], this.datePicked[1], inclusivity);
+            }
+
+            return d.isBetween(this.datePicked[0], this.datePicked[1], inclusivity);
+          }).length;
+
+        if (holiday) {
           this.datePicked.length = 0;
 
           if (typeof this.options.onError === 'function') {
@@ -559,6 +597,7 @@ export class Litepicker extends Calendar {
   private shouldAllowMouseEnter(el: HTMLElement) {
     return !this.options.singleMode
       && !el.classList.contains(style.isLocked)
+      && !el.classList.contains(style.isHoliday)
       && !el.classList.contains(style.isBooked);
   }
 

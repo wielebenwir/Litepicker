@@ -20,6 +20,7 @@ export const containerDays: string;
 export const dayItem: string;
 export const isToday: string;
 export const isLocked: string;
+export const isHoliday: string;
 export const isPartiallyBooked: string;
 export const isBooked: string;
 export const isInRange: string;

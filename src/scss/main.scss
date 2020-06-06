@@ -226,6 +226,9 @@
             cursor: default;
           }
         }
+        &.is-holiday {
+          background-color: orange;
+        }
         &.is-partially-booked {
           background: linear-gradient(to bottom right, #fff 0%, #fff 50%, #a48d01 50%, #a48d01 100%);
         }
