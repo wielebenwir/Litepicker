@@ -53,6 +53,13 @@ export class Litepicker extends Calendar {
       );
     }
 
+    if (this.options.partiallyBookedDays.length) {
+      this.options.partiallyBookedDays = DateTime.convertArray(
+        this.options.partiallyBookedDays,
+        this.options.partiallyBookedDaysFormat,
+      );
+    }
+
     if (this.options.highlightedDays.length) {
       this.options.highlightedDays = DateTime.convertArray(
         this.options.highlightedDays,
@@ -62,6 +69,10 @@ export class Litepicker extends Calendar {
 
     if (this.options.hotelMode && !('bookedDaysInclusivity' in options)) {
       this.options.bookedDaysInclusivity = '[)';
+    }
+
+    if (this.options.hotelMode && !('partiallyBookedDaysInclusivity' in options)) {
+      this.options.partiallyBookedDaysInclusivity = '[)';
     }
 
     if (this.options.hotelMode && !('disallowBookedDaysInRange' in options)) {
@@ -317,7 +328,13 @@ export class Litepicker extends Calendar {
       && this.datePicked.length === 2;
   }
 
-  private shouldCheckHoliays() {
+  private shouldCheckPartiallyBookedDays() {
+    return this.options.disallowPartiallyBookedDaysInRange
+      && this.options.partiallyBookedDays.length
+      && this.datePicked.length === 2;
+  }
+
+  private shouldCheckHolidays() {
     return this.options.disallowHolidaysInRange
       && this.options.holidays.length
       && this.datePicked.length === 2;
@@ -401,7 +418,7 @@ export class Litepicker extends Calendar {
         }
       }
 
-      if (this.shouldCheckHoliays()) {
+      if (this.shouldCheckHolidays()) {
         const inclusivity = this.options.holidaysInclusivity;
         const holiday = this.options.holidays
           .filter((d) => {
@@ -422,14 +439,9 @@ export class Litepicker extends Calendar {
         }
       }
 
-      if (this.shouldCheckBookedDays()) {
-        let inclusivity = this.options.bookedDaysInclusivity;
-
-        if (this.options.hotelMode && this.datePicked.length === 2) {
-          inclusivity = '()';
-        }
-
-        let booked = this.options.bookedDays
+      if (this.shouldCheckPartiallyBookedDays()) {
+        const inclusivity = this.options.partiallyBookedDays;
+        const booked = this.options.partiallyBookedDays
           .filter((d) => {
             if (d instanceof Array) {
               return d[0].isBetween(this.datePicked[0], this.datePicked[1], inclusivity)
@@ -439,18 +451,30 @@ export class Litepicker extends Calendar {
             return d.isBetween(this.datePicked[0], this.datePicked[1]);
           }).length;
 
-        if (!booked && this.datePicked[0].getDate() !== this.datePicked[1].getDate()) {
-          const startDate = this.datePicked[0].format(this.options.bookedDaysFormat);
-          const endDate = this.datePicked[1].format(this.options.bookedDaysFormat);
-          const startDay = this.options.days[startDate];
-          const endDay = this.options.days[endDate];
-          booked = endDay.firstSlotBooked || startDay.lastSlotBooked;
-        }
-
-        const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
-          && this.datePicked.length === 1;
+        const anyBookedDaysAsCheckout = true;
 
         if (booked && !anyBookedDaysAsCheckout) {
+          this.datePicked.length = 0;
+
+          if (typeof this.options.onError === 'function') {
+            this.options.onError.call(this, 'INVALID_RANGE');
+          }
+        }
+      }
+
+      if (this.shouldCheckBookedDays()) {
+        const inclusivity = this.options.bookedDaysInclusivity;
+        const booked = this.options.bookedDays
+          .filter((d) => {
+            if (d instanceof Array) {
+              return d[0].isBetween(this.datePicked[0], this.datePicked[1], inclusivity)
+                || d[1].isBetween(this.datePicked[0], this.datePicked[1], inclusivity);
+            }
+
+            return d.isBetween(this.datePicked[0], this.datePicked[1], inclusivity);
+          }).length;
+
+        if (booked) {
           this.datePicked.length = 0;
 
           if (typeof this.options.onError === 'function') {

@@ -38,9 +38,11 @@ export class Calendar {
     autoRefresh: false,
     moveByOneMonth: false,
 
+    days: [],
+
     lockDaysFormat: 'YYYY-MM-DD',
     lockDays: [],
-    disallowLockDaysInRange: false,
+    disallowLockDaysInRange: true,
     lockDaysInclusivity: '[]',
 
     holidaysFormat: 'YYYY-MM-DD',
@@ -48,10 +50,15 @@ export class Calendar {
     disallowHolidaysInRange: false,
     holidaysInclusivity: '[]',
 
+    partiallyBookedDaysFormat: 'YYYY-MM-DD',
+    partiallyBookedDays: [],
+    disallowPartiallyBookedDaysInRange: true,
+    partiallyBookedDaysInclusivity: '[]',
+    anyPartiallyBookedDaysAsCheckout: false,
+
     bookedDaysFormat: 'YYYY-MM-DD',
     bookedDays: [],
-    days: [],
-    disallowBookedDaysInRange: false,
+    disallowBookedDaysInRange: true,
     bookedDaysInclusivity: '[]',
     anyBookedDaysAsCheckout: false,
 
@@ -569,16 +576,42 @@ export class Calendar {
         || (this.datePicked.length === 1 && isBookedBefore && booked)
         || (this.datePicked.length === 1 && isBookedBefore && isCheckInAndCheckOut);
 
-      // const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
-      //  && this.datePicked.length === 1;
-      const anyBookedDaysAsCheckout = true;
-
-      if (booked) {
-        day.classList.add(style.isPartiallyBooked);
-      }
+      const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
+        && this.datePicked.length === 1;
 
       if (shouldBooked && !anyBookedDaysAsCheckout) {
         day.classList.add(style.isBooked);
+      }
+    }
+
+    if (this.datePicked.length <= 1
+      && this.options.partiallyBookedDays.length) {
+      let inclusivity = this.options.partiallyBookedDaysInclusivity;
+
+      if (this.options.hotelMode && this.datePicked.length === 1) {
+        inclusivity = '()';
+      }
+
+      const dateBefore = date.clone();
+      dateBefore.subtract(1, 'day');
+
+      const dateAfter = date.clone();
+      dateAfter.add(1, 'day');
+
+      const booked = this.dateIsPartiallyBooked(date, inclusivity);
+      const isBookedBefore = this.dateIsPartiallyBooked(dateBefore, '[]');
+      const isCheckInAndCheckOut = this.dateIsPartiallyBooked(date, '(]');
+      // const isBookedAfter = this.dateIsBooked(dateAfter, '[]');
+
+      const shouldPartiallyBooked = (this.datePicked.length === 0 && booked)
+        || (this.datePicked.length === 1 && isBookedBefore && booked)
+        || (this.datePicked.length === 1 && isBookedBefore && isCheckInAndCheckOut);
+
+      const anyPartiallyBookedDaysAsCheckout = this.options.anyPartiallyBookedDaysAsCheckout
+        && this.datePicked.length === 1;
+
+      if (shouldPartiallyBooked && !anyPartiallyBookedDaysAsCheckout) {
+        day.classList.add(style.isPartiallyBooked);
       }
     }
 
@@ -648,6 +681,17 @@ export class Calendar {
 
   protected dateIsBooked(date, inclusivity) {
     return this.options.bookedDays
+      .filter((d) => {
+        if (d instanceof Array) {
+          return date.isBetween(d[0], d[1], inclusivity);
+        }
+
+        return d.isSame(date, 'day');
+      }).length;
+  }
+
+  protected dateIsPartiallyBooked(date, inclusivity) {
+    return this.options.partiallyBookedDays
       .filter((d) => {
         if (d instanceof Array) {
           return date.isBetween(d[0], d[1], inclusivity);

@@ -13,6 +13,7 @@
   --litepickerDayIsInRange: #bbdefb;
   --litepickerDayIsLockedColor: #9e9e9e;
   --litepickerDayIsBookedColor: #9e9e9e;
+  --litepickerDayIsPartiallyBookedColor: #9e9e9e;
   --litepickerDayIsStartColor: #fff;
   --litepickerDayIsStartBg: #2196f3;
   --litepickerDayIsEndColor: #fff;
@@ -228,6 +229,11 @@
         }
         &.is-holiday {
           background-color: orange;
+          &:hover {
+            color: var(--litepickerDayIsLockedColor);
+            box-shadow: none;
+            cursor: default;
+          }
         }
         &.is-partially-booked {
           background: linear-gradient(to bottom right, #fff 0%, #fff 50%, #a48d01 50%, #a48d01 100%);
