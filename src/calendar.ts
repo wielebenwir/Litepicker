@@ -611,7 +611,15 @@ export class Calendar {
         && this.datePicked.length === 1;
 
       if (shouldPartiallyBooked && !anyPartiallyBookedDaysAsCheckout) {
-        day.classList.add(style.isPartiallyBooked);
+        const dayData = this.options.days[date.format(this.options.format)];
+
+        if (dayData.firstSlotBooked === false) {
+          day.classList.add(style.isPartiallyBookedStart);
+        }
+
+        if (dayData.lastSlotBooked === false) {
+          day.classList.add(style.isPartiallyBookedEnd);
+        }
       }
     }
 

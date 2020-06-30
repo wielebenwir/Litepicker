@@ -8,11 +8,16 @@
   --litepickerMonthWeekdayColor: #9e9e9e;
 
   --litepickerDayColor: #333;
+  --litepickerDayColorBg: #20c527;
   --litepickerDayColorHover: #2196f3;
   --litepickerDayIsTodayColor: #f44336;
   --litepickerDayIsInRange: #bbdefb;
   --litepickerDayIsLockedColor: #9e9e9e;
+  --litepickerDayIsLockedColorBg: #a0a0a0;
+  --litepickerDayIsHolidayColor: #000000;
+  --litepickerDayIsHolidayColorBg: #ff9218;
   --litepickerDayIsBookedColor: #9e9e9e;
+  --litepickerDayIsBookedColorBg: #f06f6f;
   --litepickerDayIsPartiallyBookedColor: #9e9e9e;
   --litepickerDayIsStartColor: #fff;
   --litepickerDayIsStartBg: #2196f3;
@@ -235,8 +240,13 @@
             cursor: default;
           }
         }
-        &.is-partially-booked {
-          background: linear-gradient(to bottom right, #fff 0%, #fff 50%, #a48d01 50%, #a48d01 100%);
+        &.is-partially-booked-start {
+          background: linear-gradient(to bottom right, var(--litepickerDayColorBg) 0%, var(--litepickerDayColorBg) 50%,
+            var(--litepickerDayIsBookedColorBg) 50%, var(--litepickerDayIsBookedColorBg) 100%);
+        }
+        &.is-partially-booked-end {
+          background: linear-gradient(to top left, var(--litepickerDayColorBg) 0%, var(--litepickerDayColorBg) 50%,
+            var(--litepickerDayIsBookedColorBg) 50%, var(--litepickerDayIsBookedColorBg) 100%);
         }
         &.is-booked {
           color: var(--litepickerDayIsBookedColor);
