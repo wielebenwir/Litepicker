@@ -386,6 +386,7 @@ export class Litepicker extends Calendar {
       }
 
       if (this.shouldResetDatePicked()) {
+        console.log('shouldResetDatePicked');
         this.datePicked.length = 0;
       }
 
@@ -493,12 +494,18 @@ export class Litepicker extends Calendar {
       this.render();
 
       if (this.options.autoApply) {
+        let datePicked = false;
         if (this.options.singleMode && this.datePicked.length) {
           this.setDate(this.datePicked[0]);
           this.hide();
+          datePicked = true;
         } else if (!this.options.singleMode && this.datePicked.length === 2) {
           this.setDateRange(this.datePicked[0], this.datePicked[1]);
           this.hide();
+          datePicked = true;
+        }
+        if (typeof this.options.onAutoApply === 'function') {
+          this.options.onAutoApply.call(this, datePicked);
         }
       }
       return;
@@ -688,6 +695,17 @@ export class Litepicker extends Calendar {
         const day = this.renderDay(date);
 
         if (date.isBetween(date1, date2)) {
+          const dayData = this.options.days[date.format(this.options.bookedDaysFormat)];
+          if (dayData.bookedDay) {
+            day.classList.add(style.isBooked);
+          } else if (dayData.partiallyBookedDay) {
+            if (dayData.firstSlotBooked) {
+              day.classList.add(style.isPartiallyBookedStart);
+            }
+            if (dayData.lastSlotBooked) {
+              day.classList.add(style.isPartiallyBookedEnd);
+            }
+          }
           day.classList.add(style.isInRange);
         }
 
@@ -742,6 +760,7 @@ export class Litepicker extends Calendar {
     this.datePicked.length = 0;
     this.render();
   }
+
   private onInput(event) {
     let [startValue, endValue] = this.parseInput();
     let isValid = false;

@@ -76,8 +76,8 @@ export class Calendar {
     buttonText: {
       apply: 'Apply',
       cancel: 'Cancel',
-      previousMonth: '<svg width="11" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M7.919 0l2.748 2.667L5.333 8l5.334 5.333L7.919 16 0 8z" fill-rule="nonzero"/></svg>',
       nextMonth: '<svg width="11" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M2.748 16L0 13.333 5.333 8 0 2.667 2.748 0l7.919 8z" fill-rule="nonzero"/></svg>',
+      previousMonth: '<svg width="11" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M7.919 0l2.748 2.667L5.333 8l5.334 5.333L7.919 16 0 8z" fill-rule="nonzero"/></svg>',
       reset: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
         <path d="M0 0h24v24H0z" fill="none"/>
         <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
@@ -96,6 +96,7 @@ export class Calendar {
     onError: null,
     onRender: null,
     onRenderDay: null,
+    onAutoApply: null,
     onChangeMonth: null,
     onChangeYear: null,
     onDayHover: null,
@@ -523,6 +524,44 @@ export class Calendar {
       }
     }
 
+    if (this.options.bookedDays.length) {
+      const booked = this.options.bookedDays
+        .filter((d) => {
+          if (d instanceof Array) {
+            return date.isBetween(d[0], d[1], this.options.bookedDaysInclusivity);
+          }
+
+          return d.isSame(date, 'day');
+        }).length;
+
+      if (booked) {
+        day.classList.add(style.isBooked);
+      }
+    }
+
+    if (this.options.partiallyBookedDays.length) {
+      const partiallyBooked = this.options.partiallyBookedDays
+        .filter((d) => {
+          if (d instanceof Array) {
+            return date.isBetween(d[0], d[1], this.options.partiallyBookedDaysInclusivity);
+          }
+
+          return d.isSame(date, 'day');
+        }).length;
+
+      if (partiallyBooked) {
+        const dayData = this.options.days[date.format(this.options.format)];
+
+        if (dayData.firstSlotBooked === false) {
+          day.classList.add(style.isPartiallyBookedStart);
+        }
+
+        if (dayData.lastSlotBooked === false) {
+          day.classList.add(style.isPartiallyBookedEnd);
+        }
+      }
+    }
+
     if (this.options.holidays.length) {
       const holiday = this.options.holidays
         .filter((d) => {
@@ -553,72 +592,64 @@ export class Calendar {
       }
     }
 
-    if (this.datePicked.length <= 1
-      && this.options.bookedDays.length) {
-      let inclusivity = this.options.bookedDaysInclusivity;
-
-      if (this.options.hotelMode && this.datePicked.length === 1) {
-        inclusivity = '()';
-      }
-
+    if (this.datePicked.length <= 1) {
       const dateBefore = date.clone();
       dateBefore.subtract(1, 'day');
 
       const dateAfter = date.clone();
       dateAfter.add(1, 'day');
 
-      const booked = this.dateIsBooked(date, inclusivity);
-      const isBookedBefore = this.dateIsBooked(dateBefore, '[]');
-      const isCheckInAndCheckOut = this.dateIsBooked(date, '(]');
-      // const isBookedAfter = this.dateIsBooked(dateAfter, '[]');
+      if (this.options.bookedDays.length) {
+        let inclusivity = this.options.bookedDaysInclusivity;
 
-      const shouldBooked = (this.datePicked.length === 0 && booked)
-        || (this.datePicked.length === 1 && isBookedBefore && booked)
-        || (this.datePicked.length === 1 && isBookedBefore && isCheckInAndCheckOut);
-
-      const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
-        && this.datePicked.length === 1;
-
-      if (shouldBooked && !anyBookedDaysAsCheckout) {
-        day.classList.add(style.isBooked);
-      }
-    }
-
-    if (this.datePicked.length <= 1
-      && this.options.partiallyBookedDays.length) {
-      let inclusivity = this.options.partiallyBookedDaysInclusivity;
-
-      if (this.options.hotelMode && this.datePicked.length === 1) {
-        inclusivity = '()';
-      }
-
-      const dateBefore = date.clone();
-      dateBefore.subtract(1, 'day');
-
-      const dateAfter = date.clone();
-      dateAfter.add(1, 'day');
-
-      const booked = this.dateIsPartiallyBooked(date, inclusivity);
-      const isBookedBefore = this.dateIsPartiallyBooked(dateBefore, '[]');
-      const isCheckInAndCheckOut = this.dateIsPartiallyBooked(date, '(]');
-      // const isBookedAfter = this.dateIsBooked(dateAfter, '[]');
-
-      const shouldPartiallyBooked = (this.datePicked.length === 0 && booked)
-        || (this.datePicked.length === 1 && isBookedBefore && booked)
-        || (this.datePicked.length === 1 && isBookedBefore && isCheckInAndCheckOut);
-
-      const anyPartiallyBookedDaysAsCheckout = this.options.anyPartiallyBookedDaysAsCheckout
-        && this.datePicked.length === 1;
-
-      if (shouldPartiallyBooked && !anyPartiallyBookedDaysAsCheckout) {
-        const dayData = this.options.days[date.format(this.options.format)];
-
-        if (dayData.firstSlotBooked === false) {
-          day.classList.add(style.isPartiallyBookedStart);
+        if (this.options.hotelMode && this.datePicked.length === 1) {
+          inclusivity = '()';
         }
 
-        if (dayData.lastSlotBooked === false) {
-          day.classList.add(style.isPartiallyBookedEnd);
+        const booked = this.dateIsBooked(date, inclusivity);
+        const isBookedBefore = this.dateIsBooked(dateBefore, '[]');
+        const isCheckInAndCheckOut = this.dateIsBooked(date, '(]');
+
+        const shouldBooked = (this.datePicked.length === 0 && booked)
+          || (this.datePicked.length === 1 && isBookedBefore && booked)
+          || (this.datePicked.length === 1 && isBookedBefore && isCheckInAndCheckOut);
+
+        const anyBookedDaysAsCheckout = this.options.anyBookedDaysAsCheckout
+          && this.datePicked.length === 1;
+
+        if (shouldBooked && !anyBookedDaysAsCheckout) {
+          day.classList.add(style.isBooked);
+        }
+      }
+
+      if (this.options.partiallyBookedDays.length) {
+        let inclusivity = this.options.partiallyBookedDaysInclusivity;
+
+        if (this.options.hotelMode && this.datePicked.length === 1) {
+          inclusivity = '()';
+        }
+
+        const partiallyBooked = this.dateIsPartiallyBooked(date, inclusivity);
+        const isBookedBefore = this.dateIsPartiallyBooked(dateBefore, '[]');
+        const isCheckInAndCheckOut = this.dateIsPartiallyBooked(date, '(]');
+
+        const shouldPartiallyBooked = (this.datePicked.length === 0 && partiallyBooked)
+          || (this.datePicked.length === 1 && isBookedBefore && partiallyBooked)
+          || (this.datePicked.length === 1 && isBookedBefore && isCheckInAndCheckOut);
+
+        const anyPartiallyBookedDaysAsCheckout = this.options.anyPartiallyBookedDaysAsCheckout
+          && this.datePicked.length === 1;
+
+        if (shouldPartiallyBooked && !anyPartiallyBookedDaysAsCheckout) {
+          const dayData = this.options.days[date.format(this.options.format)];
+
+          if (dayData.firstSlotBooked === false) {
+            day.classList.add(style.isPartiallyBookedStart);
+          }
+
+          if (dayData.lastSlotBooked === false) {
+            day.classList.add(style.isPartiallyBookedEnd);
+          }
         }
       }
     }
