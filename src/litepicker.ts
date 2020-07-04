@@ -386,7 +386,6 @@ export class Litepicker extends Calendar {
       }
 
       if (this.shouldResetDatePicked()) {
-        console.log('shouldResetDatePicked');
         this.datePicked.length = 0;
       }
 
