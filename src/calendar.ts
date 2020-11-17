@@ -474,7 +474,54 @@ export class Calendar {
       && this.datePicked.length === 1) {
       const hotelMode = Number(this.options.hotelMode);
       const left = this.datePicked[0].clone().subtract(this.options.maxDays + hotelMode, 'day');
-      const right = this.datePicked[0].clone().add(this.options.maxDays + hotelMode, 'day');
+
+      // Days we add to maxdays
+      let additionalDays = 0;
+
+      if (!this.options.disallowLockDaysInRange) {
+        // First right date
+        let rightDate = this.datePicked[0].clone();
+
+        // Max days setting
+        let maxDays = this.options.maxDays;
+
+        // Max days to be checked
+        const maxMaxDays = 60;
+
+        // Lockdays > picked date
+        const relevantLockDays = [];
+        for (let idx of this.options.lockDays.length) {
+          if (this.datePicked[0].getTime() < this.options.lockDays[idx].getTime()) {
+            relevantLockDays.push(this.options.lockDays[idx]);
+          }
+        }
+
+        // Goto right, and check for locked days to increase maxdays limit
+        let lastDayLocked = false;
+        while (maxDays > 0 ) {
+          maxDays--;
+          // nextday from datepicked
+          rightDate = rightDate.add(1, 'day');
+          // check if date is lock date and not booked, partially booked or holiday
+          for (let idx if relevantLockDays.length) {
+            if (relevantLockDays[idx].getTime() == rightDate.getTime()) {
+              if(
+                !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
+                !this.dateIsPartiallyBooked(rightDate, this.options.partiallyBookedDaysInclusivity) &&
+                !this.dateIsHoliday(rightDate, this.options.holidaysInclusivity) &&
+                lastDayLocked == false
+              ) {
+                additionalDays++;
+                lastDayLocked = true;
+              } else {
+                lastDayLocked = false;
+              }
+            }
+          }
+        }
+      }
+
+      const right = this.datePicked[0].clone().add(this.options.maxDays + additionalDays + hotelMode, 'day');
 
       if (date.isSameOrBefore(left)) {
         day.classList.add(style.isLocked);
@@ -731,6 +778,17 @@ export class Calendar {
 
   protected dateIsPartiallyBooked(date, inclusivity) {
     return this.options.partiallyBookedDays
+      .filter((d) => {
+        if (d instanceof Array) {
+          return date.isBetween(d[0], d[1], inclusivity);
+        }
+
+        return d.isSame(date, 'day');
+      }).length;
+  }
+
+  protected dateIsHoliday(date, inclusivity) {
+    return this.options.holidays
       .filter((d) => {
         if (d instanceof Array) {
           return date.isBetween(d[0], d[1], inclusivity);
