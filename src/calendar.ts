@@ -100,6 +100,7 @@ export class Calendar {
     onChangeMonth: null,
     onChangeYear: null,
     onDayHover: null,
+    onDaySelect: null,
     resetBtnCallback: null,
 
     moduleRanges: null,
@@ -490,7 +491,7 @@ export class Calendar {
 
         // Lockdays > picked date
         const relevantLockDays = [];
-        for (let idx of this.options.lockDays.length) {
+        for (let idx = 0; idx < this.options.lockDays.length; idx++) {
           if (this.datePicked[0].getTime() < this.options.lockDays[idx].getTime()) {
             relevantLockDays.push(this.options.lockDays[idx]);
           }
@@ -498,20 +499,22 @@ export class Calendar {
 
         // Goto right, and check for locked days to increase maxdays limit
         let lastDayLocked = false;
-        while (maxDays > 0 ) {
-          maxDays--;
+        while (maxDays > 0) {
+          maxDays = maxDays - 1;
           // nextday from datepicked
           rightDate = rightDate.add(1, 'day');
           // check if date is lock date and not booked, partially booked or holiday
-          for (let idx if relevantLockDays.length) {
-            if (relevantLockDays[idx].getTime() == rightDate.getTime()) {
-              if(
+          for (let idx = 0; idx < relevantLockDays.length; idx++) {
+            if (relevantLockDays[idx].getTime() === rightDate.getTime()) {
+              if (
                 !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
-                !this.dateIsPartiallyBooked(rightDate, this.options.partiallyBookedDaysInclusivity) &&
+                !this.dateIsPartiallyBooked(
+                  rightDate,
+                  this.options.partiallyBookedDaysInclusivity) &&
                 !this.dateIsHoliday(rightDate, this.options.holidaysInclusivity) &&
-                lastDayLocked == false
+                lastDayLocked === false
               ) {
-                additionalDays++;
+                additionalDays = additionalDays + 1;
                 lastDayLocked = true;
               } else {
                 lastDayLocked = false;
@@ -521,7 +524,10 @@ export class Calendar {
         }
       }
 
-      const right = this.datePicked[0].clone().add(this.options.maxDays + additionalDays + hotelMode, 'day');
+      const right = this.datePicked[0].clone().add(
+        this.options.maxDays + additionalDays + hotelMode,
+        'day',
+      );
 
       if (date.isSameOrBefore(left)) {
         day.classList.add(style.isLocked);

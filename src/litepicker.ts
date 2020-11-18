@@ -369,6 +369,16 @@ export class Litepicker extends Calendar {
     if (target.classList.contains(style.dayItem)) {
       e.preventDefault();
 
+      console.log('click on date');
+      console.log(typeof this.options.onDaySelect);
+      if (typeof this.options.onDaySelect === 'function') {
+        this.options.onDaySelect.call(
+          this,
+          DateTime.parseDateTime(target.dataset.time),
+          this.datePicked.length,
+        );
+      }
+
       if (!this.isSamePicker(target)) {
         return;
       }
@@ -507,6 +517,7 @@ export class Litepicker extends Calendar {
           this.options.onAutoApply.call(this, datePicked);
         }
       }
+
       return;
     }
 
