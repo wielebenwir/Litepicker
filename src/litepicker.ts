@@ -361,23 +361,11 @@ export class Litepicker extends Calendar {
 
     // Click outside picker
     if (!target.closest(`.${style.litepicker}`)) {
-      this.hide();
-      return;
     }
 
     // Click on date
     if (target.classList.contains(style.dayItem)) {
       e.preventDefault();
-
-      console.log('click on date');
-      console.log(typeof this.options.onDaySelect);
-      if (typeof this.options.onDaySelect === 'function') {
-        this.options.onDaySelect.call(
-          this,
-          DateTime.parseDateTime(target.dataset.time),
-          this.datePicked.length,
-        );
-      }
 
       if (!this.isSamePicker(target)) {
         return;
@@ -498,6 +486,15 @@ export class Litepicker extends Calendar {
             this.options.onError.call(this, 'INVALID_RANGE');
           }
         }
+      }
+
+      // OnDaySelect function
+      if (typeof this.options.onDaySelect === 'function') {
+        this.options.onDaySelect.call(
+          this,
+          DateTime.parseDateTime(target.dataset.time),
+          this.datePicked.length,
+        );
       }
 
       this.render();
