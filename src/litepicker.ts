@@ -1,7 +1,7 @@
 import { Calendar } from './calendar';
 import { DateTime } from './datetime';
 import * as style from './scss/main.scss';
-import { findNestedMonthItem } from './utils';
+import { findNestedMonthItem, getOrientation, isMobile } from './utils';
 
 export class Litepicker extends Calendar {
   protected triggerElement;
@@ -160,12 +160,6 @@ export class Litepicker extends Calendar {
     this.picker.style.display = 'none';
     this.picker.addEventListener('mouseenter', e => this.onMouseEnter(e), true);
     this.picker.addEventListener('mouseleave', e => this.onMouseLeave(e), false);
-    if (this.options.element instanceof HTMLElement) {
-      this.options.element.addEventListener('change', e => this.onInput(e), true);
-    }
-    if (this.options.elementEnd instanceof HTMLElement) {
-      this.options.elementEnd.addEventListener('change', e => this.onInput(e), true);
-    }
 
     if (this.options.autoRefresh) {
       if (this.options.element instanceof HTMLElement) {
@@ -174,13 +168,23 @@ export class Litepicker extends Calendar {
       if (this.options.elementEnd instanceof HTMLElement) {
         this.options.elementEnd.addEventListener('keyup', e => this.onInput(e), true);
       }
+    } else {
+      if (this.options.element instanceof HTMLElement) {
+        this.options.element.addEventListener('change', e => this.onInput(e), true);
+      }
+      if (this.options.elementEnd instanceof HTMLElement) {
+        this.options.elementEnd.addEventListener('change', e => this.onInput(e), true);
+      }
     }
 
-    if (this.options.moduleNavKeyboard
+    if (this.options.moduleNavKeyboard) {
       // tslint:disable-next-line: no-string-literal
-      && typeof this['enableModuleNavKeyboard'] === 'function') {
-      // tslint:disable-next-line: no-string-literal
-      this['enableModuleNavKeyboard'].call(this, this);
+      if (typeof this['enableModuleNavKeyboard'] === 'function') {
+        // tslint:disable-next-line: no-string-literal
+        this['enableModuleNavKeyboard'].call(this, this);
+      } else {
+        throw new Error('moduleNavKeyboard is on but library does not included. See https://github.com/wakirin/litepicker-module-navkeyboard.');
+      }
     }
 
     this.render();
@@ -211,63 +215,92 @@ export class Litepicker extends Calendar {
         this.options.element.parentNode.appendChild(this.backdrop);
       }
 
-      window.addEventListener('orientationchange', () => {
-        if (this.options.mobileFriendly && this.isShowning()) {
-          switch (screen.orientation.angle) {
-            case -90:
-            case 90:
-              this.options.numberOfMonths = 2;
-              this.options.numberOfColumns = 2;
-              break;
+      window.addEventListener('orientationchange', (evt) => {
+        // replace to screen.orientation.angle when Safari will support
+        // https://caniuse.com/#feat=screen-orientation
 
-            default:
-              this.options.numberOfMonths = 1;
-              this.options.numberOfColumns = 1;
-              break;
+        // get correct viewport after changing orientation
+        // https://stackoverflow.com/a/49383279/2873909
+        const afterOrientationChange = () => {
+          if (isMobile() && this.isShowning()) {
+            switch (getOrientation()) {
+              case 'landscape':
+                this.options.numberOfMonths = 2;
+                this.options.numberOfColumns = 2;
+                break;
+
+              // portrait
+              default:
+                this.options.numberOfMonths = 1;
+                this.options.numberOfColumns = 1;
+                break;
+            }
+
+            this.render();
+
+            if (!this.options.inlineMode) {
+              const pickerBCR = this.picker.getBoundingClientRect();
+              this.picker.style.top = `calc(50% - ${(pickerBCR.height / 2)}px)`;
+              this.picker.style.left = `calc(50% - ${(pickerBCR.width / 2)}px)`;
+            }
           }
 
-          this.render();
+          window.removeEventListener('resize', afterOrientationChange);
+        };
 
-          const pickerBCR = this.picker.getBoundingClientRect();
-          this.picker.style.top = `calc(50% - ${(pickerBCR.height / 2)}px)`;
-          this.picker.style.left = `calc(50% - ${(pickerBCR.width / 2)}px)`;
-        }
+        window.addEventListener('resize', afterOrientationChange);
       });
     }
 
     if (this.options.inlineMode) {
       this.show();
+
+      if (this.options.mobileFriendly && isMobile()) {
+        // force trigger orientationchange
+        window.dispatchEvent(new Event('orientationchange'));
+        window.dispatchEvent(new Event('resize'));
+      }
     }
 
     this.updateInput();
   }
 
   private parseInput() {
+    const delimiter = this.options.delimiter;
+    const delimiterRegex = new RegExp(`${delimiter}`);
+    const splittedValue = this.options.element instanceof HTMLInputElement
+      ? this.options.element.value.split(delimiter)
+      : [];
+
     if (this.options.elementEnd) {
       if (this.options.element instanceof HTMLInputElement
         && this.options.element.value.length
         && this.options.elementEnd instanceof HTMLInputElement
         && this.options.elementEnd.value.length) {
         return [
-          new DateTime(this.options.element.value),
-          new DateTime(this.options.elementEnd.value),
+          new DateTime(this.options.element.value, this.options.format),
+          new DateTime(this.options.elementEnd.value, this.options.format),
         ];
       }
     } else if (this.options.singleMode) {
       if (this.options.element instanceof HTMLInputElement
         && this.options.element.value.length) {
         return [
-          new DateTime(this.options.element.value),
+          new DateTime(this.options.element.value, this.options.format),
         ];
       }
-    } else if (/\s\-\s/.test(this.options.element.value)) {
-      const values = this.options.element.value.split(' - ');
-      if (values.length === 2) {
-        return [
-          new DateTime(values[0]),
-          new DateTime(values[1]),
-        ];
-      }
+    } else if (this.options.element instanceof HTMLInputElement
+      && delimiterRegex.test(this.options.element.value)
+      && splittedValue.length
+      && splittedValue.length % 2 === 0) {
+
+      const d1 = splittedValue.slice(0, splittedValue.length / 2).join(delimiter);
+      const d2 = splittedValue.slice(splittedValue.length / 2).join(delimiter);
+
+      return [
+        new DateTime(d1, this.options.format),
+        new DateTime(d2, this.options.format),
+      ];
     }
 
     return [];
@@ -289,7 +322,7 @@ export class Litepicker extends Calendar {
         this.options.element.value = startValue;
         this.options.elementEnd.value = endValue;
       } else {
-        this.options.element.value = `${startValue} - ${endValue}`;
+        this.options.element.value = `${startValue}${this.options.delimiter}${endValue}`;
       }
     }
 
@@ -623,15 +656,20 @@ export class Litepicker extends Calendar {
       left -= pickerBCR.left;
     }
 
-    // let top = dayR.top - pickerR.top - tooltipR.height;
-    // let left = (dayR.left - pickerR.left) - (tooltipR.width / 2) + (dayR.width / 2);
-
     top -= tooltipBCR.height;
     left -= tooltipBCR.width / 2;
     left += dayBCR.width / 2;
 
     tooltip.style.top = `${top}px`;
     tooltip.style.left = `${left}px`;
+
+    if (typeof this.options.onShowTooltip === 'function') {
+      this.options.onShowTooltip.call(
+        this,
+        tooltip,
+        element,
+      );
+    }
   }
 
   private hideTooltip() {
@@ -668,6 +706,7 @@ export class Litepicker extends Calendar {
         this,
         DateTime.parseDateTime(target.dataset.time),
         target.classList.toString().split(/\s/),
+        target,
       );
     }
 
@@ -785,7 +824,7 @@ export class Litepicker extends Calendar {
       isValid = startValue instanceof DateTime
         && endValue instanceof DateTime
         // tslint:disable-next-line: max-line-length
-        && `${startValue.format(dateFormat)} - ${endValue.format(dateFormat)}` === this.options.element.value;
+        && `${startValue.format(dateFormat)}${this.options.delimiter}${endValue.format(dateFormat)}` === this.options.element.value;
     }
 
     if (isValid) {
@@ -819,12 +858,16 @@ export class Litepicker extends Calendar {
       if (this.options.elementEnd) {
         isStart = startValue.format(dateFormat) === event.target.value;
       } else {
-        isStart = event.target.value.startWith(startValue.format(dateFormat));
+        isStart = event.target.value.startsWith(startValue.format(dateFormat));
       }
 
       if (!isStart) {
         dateGo = endValue.clone();
         monthIdx = this.options.numberOfMonths - 1;
+      }
+
+      if (typeof this.options.onSelect === 'function') {
+        this.options.onSelect.call(this, this.getStartDate(), this.getEndDate());
       }
 
       this.gotoDate(dateGo, monthIdx);

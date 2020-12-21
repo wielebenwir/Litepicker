@@ -11,6 +11,7 @@ export class Calendar {
     firstDay: 1,
     format: 'YYYY-MM-DD',
     lang: 'en-US',
+    delimiter: ' - ',
     numberOfMonths: 1,
     numberOfColumns: 1,
     startDate: null,
@@ -101,6 +102,7 @@ export class Calendar {
     onChangeYear: null,
     onDayHover: null,
     onDaySelect: null,
+    onShowTooltip: null,
     resetBtnCallback: null,
 
     moduleRanges: null,
@@ -186,11 +188,14 @@ export class Calendar {
       this.picker.appendChild(this.renderTooltip());
     }
 
-    if (this.options.moduleRanges
+    if (this.options.moduleRanges) {
       // tslint:disable-next-line: no-string-literal
-      && typeof this['enableModuleRanges'] === 'function') {
-      // tslint:disable-next-line: no-string-literal
-      this['enableModuleRanges'].call(this, this);
+      if (typeof this['enableModuleRanges'] === 'function') {
+        // tslint:disable-next-line: no-string-literal
+        this['enableModuleRanges'].call(this, this);
+      } else {
+        throw new Error('moduleRanges is on but library does not included. See https://github.com/wakirin/litepicker-module-ranges.');
+      }
     }
 
     if (typeof this.options.onRender === 'function') {
@@ -296,6 +301,16 @@ export class Calendar {
         option.disabled = true;
 
         selectYears.appendChild(option);
+      }
+
+      if (this.options.dropdowns.years === 'asc') {
+        const childs = Array.prototype.slice.call(selectYears.childNodes);
+        const options = childs.reverse();
+        selectYears.innerHTML = '';
+        options.forEach((y) => {
+          y.innerHTML = y.value;
+          selectYears.appendChild(y);
+        });
       }
 
       selectYears.addEventListener('change', (e) => {
@@ -748,7 +763,7 @@ export class Calendar {
         const endValue = this.datePicked[1].format(this.options.format, this.options.lang);
 
         footer.querySelector(`.${style.previewDateRange}`)
-          .innerHTML = `${startValue} - ${endValue}`;
+          .innerHTML = `${startValue}${this.options.delimiter}${endValue}`;
       }
     }
 

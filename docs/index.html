@@ -74,6 +74,9 @@
 
         <p><strong>Non-module environments</strong></p>
         <code>&lt;script src="https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.js"&gt;&lt;/script&gt;</code>
+
+        <p><small>You can get a specific version, see <a href="https://www.jsdelivr.com/features#npm"
+              target="_blank">jsdelivr docs</a>.</small></p>
       </div>
 
       <hr>
@@ -104,7 +107,8 @@
         <div class="lead">
           <a id="anchor-no-css" href="#anchor-no-css">#</a> No CSS version
         </div>
-        <p>To prevent the inclusion of the CSS styles tag in the head, you can define a global variable before initializing Litepicker:</p>
+        <p>To prevent the inclusion of the CSS styles tag in the head, you can define a global variable before
+          initializing Litepicker:</p>
         <div class="code">
           window.disableLitepickerStyles = true;
           let picker = new Litepicker({ ... });
@@ -120,7 +124,7 @@
         <code>&lt;script src="https://cdn.jsdelivr.net/npm/litepicker/dist/js/main.nocss.js"&gt;&lt;/script&gt;</code>
 
         <p><strong>CSS basic styles</strong></p>
-        <code>&lt;script src="https://cdn.jsdelivr.net/npm/litepicker/dist/css/style.css"&gt;&lt;/script&gt;</code>
+        <code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/style.css"/&gt;</code>
       </div>
 
       <hr>
@@ -145,7 +149,10 @@
           <div id="option-elementEnd">elementEnd</div>
           <div class="option-type">HTMLInputElement</div>
           <div class="option-default">null</div>
-          <div class="option-description">Bind the datepicker to a element for end date.</div>
+          <div class="option-description">
+            <p>Bind the datepicker to a element for end date.</p>
+            <p>Usage <a href="https://jsfiddle.net/waki/9kztrsqp/" target="_blank">example</a>.</p>
+          </div>
 
           <div id="option-parentEl">parentEl</div>
           <div class="option-type">HTMLElement</div>
@@ -214,6 +221,10 @@
                 </tr>
               </tbody>
             </table>
+            <p>You may escape formatting tokens using \\.</p>
+            <p>Eg.:</p>
+            <p><code>format: 'YYYY-MM-DD\\T00:00:00'</code></p>
+            <p>Result: <strong>2020-01-01T00:00:00</strong></p>
           </div>
 
           <div id="option-lang">lang</div>
@@ -225,6 +236,17 @@
             and also affect to plural rules via <a
               href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/PluralRules"
               target="_blank">Intl.PluralRules</a>.
+          </div>
+
+          <div id="option-delimiter">
+            delimiter
+
+            <p class="text-gray"><small>from <strong>v1.5.0</strong></small></p>
+          </div>
+          <div class="option-type">String</div>
+          <div class="option-default"> - </div>
+          <div class="option-description">
+            <p>Delimiter between dates.</p>
           </div>
 
           <div id="option-numberOfMonths">numberOfMonths</div>
@@ -458,10 +480,10 @@
               <strong>bookedDaysFormat</strong>).</p>
             <p>
               Unlike the option <strong>lockDays</strong>:
-              <ul>
-                <li>check-in date can be selected as check-out</li>
-                <li>check-out date can be selected as check-in</li>
-              </ul>
+            <ul>
+              <li>check-in date can be selected as check-out</li>
+              <li>check-out date can be selected as check-in</li>
+            </ul>
             </p>
             <p>
               Eg: you have <code>bookedDays: [['2020-01-10', '2020-01-20']]</code>, <code>'2020-01-10'</code> is
@@ -547,6 +569,10 @@
             <br>
             If <code>maxYear</code> is <code>null</code> then <code>maxYear</code> will be equal to
             <code>(new Date()).getFullYear()</code>.
+            <p><small>from <strong>v1.4.7</strong>
+                <br>
+                <code>years</code> can be equal to <code>asc</code>
+                string to change the sort direction.</small></p>
           </div>
 
           <div id="option-buttonText">buttonText</div>
@@ -711,6 +737,17 @@
             <p><code>date</code> is the date object of the currently hovered day item.</p>
             <p><code>attributes</code> is a string array with the day item's css classes (e.g.
               <strong>is-start-date</strong>, <strong>is-locked</strong>, <strong>is-booked</strong>, etc.).</p>
+          </div>
+
+          <div>
+            onShowTooltip
+
+            <p class="text-gray"><small>from <strong>v1.5.4</strong></small></p>
+          </div>
+          <div class="option-default">null</div>
+          <div class="option-description">
+            <p>Trigger on show tooltip the picker.</p>
+            <p>Example: <code>onShowTooltip: function(tooltip, dayElement) { console.log(tooltip, dayElement); }</code></p>
           </div>
         </div>
 
@@ -899,7 +936,7 @@
   </div>
 
   <script>window.MSInputMethodContext && document.documentMode && document.write('<script src="https://cdn.jsdelivr.net/npm/ie11-custom-properties@latest/ie11CustomProperties.js"><\x2fscript>');</script>
-  <script src="https://cdn.jsdelivr.net/npm/litepicker@1.4.6/dist/js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/litepicker@1.5.7/dist/js/main.js"></script>
   <script src="./js/demo.js"></script>
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <script>
