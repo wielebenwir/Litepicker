@@ -38,6 +38,8 @@ Litepicker.prototype.show = function (el = null) {
   const element = el ? el : this.options.element;
   this.triggerElement = element;
 
+  this.scrollToDate(el);
+
   if (this.options.inlineMode) {
     this.picker.style.position = 'static';
     this.picker.style.display = 'inline-block';
@@ -46,21 +48,6 @@ Litepicker.prototype.show = function (el = null) {
     this.picker.style.bottom = null;
     this.picker.style.right = null;
     return;
-  }
-
-  if (this.options.scrollToDate) {
-    if (this.options.startDate && (!el || el === this.options.element)) {
-      const startDate = this.options.startDate.clone();
-      startDate.setDate(1);
-      this.calendars[0] = startDate.clone();
-    } else if (el && this.options.endDate && el === this.options.elementEnd) {
-      const endDate = this.options.endDate.clone();
-      endDate.setDate(1);
-      if (this.options.numberOfMonths > 1) {
-        endDate.setMonth(endDate.getMonth() - (this.options.numberOfMonths - 1));
-      }
-      this.calendars[0] = endDate.clone();
-    }
   }
 
   if (this.options.mobileFriendly && isMobile()) {
@@ -343,7 +330,11 @@ Litepicker.prototype.setOptions = function (options) {
   if (!this.options.singleMode
     && (!(this.options.startDate instanceof DateTime)
       || !(this.options.endDate instanceof DateTime))) {
-    this.options.startDate = null;
+    this.options.startDate = new DateTime(
+      this.options.startDate,
+      this.options.format,
+      this.options.lang,
+    );
     this.options.endDate = null;
   }
 

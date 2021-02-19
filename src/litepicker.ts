@@ -117,7 +117,11 @@ export class Litepicker extends Calendar {
     if (!this.options.singleMode
       && (!(this.options.startDate instanceof DateTime)
         || !(this.options.endDate instanceof DateTime))) {
-      this.options.startDate = null;
+      this.options.startDate = new DateTime(
+        this.options.startDate,
+        this.options.format,
+        this.options.lang,
+      );
       this.options.endDate = null;
     }
 
@@ -150,6 +154,19 @@ export class Litepicker extends Calendar {
     this.loadPolyfillsForIE11();
 
     this.onInit();
+  }
+
+  protected scrollToDate(el) {
+    if (this.options.scrollToDate) {
+      // tslint:disable-next-line: max-line-length
+      const startDate = this.options.startDate instanceof DateTime ? this.options.startDate.clone() : null;
+      if (this.options.startDate && (!el || el === this.options.element)) {
+        startDate.setDate(1);
+        this.calendars[0] = startDate.clone();
+        this.options.scrollToDate = false;
+        this.options.onChangeMonth.call(this, this.calendars[0], 0);
+      }
+    }
   }
 
   private onInit() {
