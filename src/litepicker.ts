@@ -411,6 +411,7 @@ export class Litepicker extends Calendar {
 
     // Click outside picker
     if (!target.closest(`.${style.litepicker}`)) {
+      this.clearSelection();
     }
 
     // Click on date
