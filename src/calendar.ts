@@ -113,7 +113,7 @@ export class Calendar {
   protected datePicked: DateTime[] = [];
   protected nextFocus: HTMLElement;
 
-  protected bookedDayAfterSelection: Number;
+  protected bookedDayAfterSelection: number;
 
   protected render() {
     const mainBlock = document.createElement('div');
@@ -431,6 +431,11 @@ export class Calendar {
         this.bookedDayAfterSelection = null;
       }
 
+      if (Number.isInteger(this.bookedDayAfterSelection) &&
+        this.bookedDayAfterSelection < date.getTime() && this.datePicked.length === 1) {
+        day.classList.add(style.isLocked);
+      }
+
       if (this.datePicked[0].toDateString() === date.toDateString()) {
         day.classList.add(style.isStartDate);
 
@@ -571,18 +576,6 @@ export class Calendar {
       day.classList.add(style.isLocked);
     }
 
-    if (this.options.selectForward
-      && this.datePicked.length === 1
-      && date.isBefore(this.datePicked[0])) {
-      day.classList.add(style.isHoliday);
-    }
-
-    if (this.options.selectBackward
-      && this.datePicked.length === 1
-      && date.isAfter(this.datePicked[0])) {
-      day.classList.add(style.isHoliday);
-    }
-
     if (this.options.lockDays.length) {
       const locked = this.options.lockDays
         .filter((d) => {
@@ -594,9 +587,6 @@ export class Calendar {
         }).length;
 
       if (locked) {
-        day.classList.add(style.isLocked);
-      } else if (Number.isInteger(this.bookedDayAfterSelection) &&
-        this.bookedDayAfterSelection < date.getTime() && this.datePicked.length === 1) {
         day.classList.add(style.isLocked);
       }
     }

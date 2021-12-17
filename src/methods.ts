@@ -395,6 +395,7 @@ Litepicker.prototype.clearSelection = function () {
   this.options.startDate = null;
   this.options.endDate = null;
   this.datePicked.length = 0;
+  this.bookedDayAfterSelection = null;
 
   this.updateInput();
 
