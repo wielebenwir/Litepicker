@@ -113,6 +113,8 @@ export class Calendar {
   protected datePicked: DateTime[] = [];
   protected nextFocus: HTMLElement;
 
+  protected bookedDayAfterSelection: Number;
+
   protected render() {
     const mainBlock = document.createElement('div');
     mainBlock.className = style.containerMain;
@@ -425,6 +427,10 @@ export class Calendar {
     }
 
     if (this.datePicked.length) {
+      if (this.datePicked.length === 2) {
+        this.bookedDayAfterSelection = null;
+      }
+
       if (this.datePicked[0].toDateString() === date.toDateString()) {
         day.classList.add(style.isStartDate);
 
@@ -506,9 +512,9 @@ export class Calendar {
 
         // Lockdays > picked date
         const relevantLockDays = [];
-        for (let idx = 0; idx < this.options.lockDays.length; idx++) {
-          if (this.datePicked[0].getTime() < this.options.lockDays[idx].getTime()) {
-            relevantLockDays.push(this.options.lockDays[idx]);
+        for (const item of this.options.lockDays) {
+          if (this.datePicked[0].getTime() < item.getTime()) {
+            relevantLockDays.push(item);
           }
         }
 
@@ -519,8 +525,8 @@ export class Calendar {
           // nextday from datepicked
           rightDate = rightDate.add(1, 'day');
           // check if date is lock date and not booked, partially booked or holiday
-          for (let idx = 0; idx < relevantLockDays.length; idx++) {
-            if (relevantLockDays[idx].getTime() === rightDate.getTime()) {
+          for (const item of relevantLockDays) {
+            if (item.getTime() === rightDate.getTime()) {
               if (
                 !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
                 !this.dateIsPartiallyBooked(
@@ -589,10 +595,14 @@ export class Calendar {
 
       if (locked) {
         day.classList.add(style.isLocked);
+      } else if (Number.isInteger(this.bookedDayAfterSelection) &&
+        this.bookedDayAfterSelection < date.getTime() && this.datePicked.length === 1) {
+        day.classList.add(style.isLocked);
       }
     }
 
     if (this.options.bookedDays.length) {
+
       const booked = this.options.bookedDays
         .filter((d) => {
           if (d instanceof Array) {
@@ -604,6 +614,13 @@ export class Calendar {
 
       if (booked) {
         day.classList.add(style.isBooked);
+
+        // if there is a booked day in selection range, we mark all days after it as locked
+        if (this.datePicked.length > 0 && !this.bookedDayAfterSelection) {
+          if (this.datePicked[0].getTime() < date.getTime()) {
+            this.bookedDayAfterSelection = date.getTime();
+          }
+        }
       }
     }
 
