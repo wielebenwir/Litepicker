@@ -107,6 +107,8 @@ export class Calendar {
 
     moduleRanges: null,
     moduleNavKeyboard: null,
+
+    onClickCalled: false,
   };
   protected calendars: DateTime[] = [];
   protected picker: HTMLElement;
@@ -455,7 +457,9 @@ export class Calendar {
         }
       }
     } else if (this.options.startDate) {
-      if (this.options.startDate.toDateString() === date.toDateString()) {
+      // Check if it was clicked before, only then mark as startdate
+      const wasOnClick = document.getElementsByClassName('is-end-date').length > 0;
+      if (this.options.startDate.toDateString() === date.toDateString() && wasOnClick) {
         day.classList.add(style.isStartDate);
 
         if (this.options.singleMode) {
@@ -497,8 +501,7 @@ export class Calendar {
       }
     }
 
-    if (this.options.maxDays
-      && this.datePicked.length === 1) {
+    if (this.options.maxDays && this.datePicked.length === 1) {
       const hotelMode = Number(this.options.hotelMode);
       const left = this.datePicked[0].clone().subtract(this.options.maxDays + hotelMode, 'day');
 
