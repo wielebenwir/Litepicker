@@ -1,4 +1,5 @@
 import { DateTime } from './datetime';
+import {isBooked} from './scss/main.scss';
 import * as style from './scss/main.scss';
 import { findNestedMonthItem } from './utils';
 
@@ -45,6 +46,7 @@ export class Calendar {
     lockDays: [],
     disallowLockDaysInRange: true,
     lockDaysInclusivity: '[]',
+    countLockedDays: false,
 
     holidaysFormat: 'YYYY-MM-DD',
     holidays: [],
@@ -508,45 +510,47 @@ export class Calendar {
       // Days we add to maxdays
       let additionalDays = 0;
 
-      if (!this.options.disallowLockDaysInRange) {
-        // First right date
-        let rightDate = this.datePicked[0].clone();
+      if (!this.options.countLockedDays) {
+        if (!this.options.disallowLockDaysInRange) {
+          // First right date
+          let rightDate = this.datePicked[0].clone();
 
-        // Max days setting
-        let maxDays = this.options.maxDays;
+          // Max days setting
+          let maxDays = this.options.maxDays;
 
-        // Max days to be checked
-        const maxMaxDays = 60;
+          // Lockdays > picked date
+          const relevantLockDays = [];
+          const overbookableDays = [
+            // this.options.holidays,
+            this.options.lockDays,
+          ];
 
-        // Lockdays > picked date
-        const relevantLockDays = [];
-        for (const item of this.options.lockDays) {
-          if (this.datePicked[0].getTime() < item.getTime()) {
-            relevantLockDays.push(item);
+          for (const daySet of overbookableDays) {
+            for (const item of daySet) {
+              if (this.datePicked[0].getTime() < item.getTime()) {
+                relevantLockDays.push(item);
+              }
+            }
           }
-        }
 
-        // Goto right, and check for locked days to increase maxdays limit
-        let lastDayLocked = false;
-        while (maxDays > 0) {
-          maxDays = maxDays - 1;
-          // nextday from datepicked
-          rightDate = rightDate.add(1, 'day');
-          // check if date is lock date and not booked, partially booked or holiday
-          for (const item of relevantLockDays) {
-            if (item.getTime() === rightDate.getTime()) {
-              if (
-                !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
-                !this.dateIsPartiallyBooked(
-                  rightDate,
-                  this.options.partiallyBookedDaysInclusivity) &&
-                !this.dateIsHoliday(rightDate, this.options.holidaysInclusivity) &&
-                lastDayLocked === false
-              ) {
-                additionalDays = additionalDays + 1;
-                lastDayLocked = true;
-              } else {
-                lastDayLocked = false;
+          // Goto right, and check for locked days to increase maxdays limit
+          while (maxDays > 0) {
+            maxDays = maxDays - 1;
+            // nextday from datepicked
+            rightDate = rightDate.add(1, 'day');
+
+            // check if date is lock date and not booked, partially booked or holiday
+            for (const item of relevantLockDays) {
+              if (item.getTime() === rightDate.getTime()) {
+                if (
+                  !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
+                  !this.dateIsPartiallyBooked(
+                    rightDate,
+                    this.options.partiallyBookedDaysInclusivity)
+                ) {
+                  additionalDays = additionalDays + 1;
+                  maxDays = maxDays + 1;
+                }
               }
             }
           }
@@ -595,7 +599,6 @@ export class Calendar {
     }
 
     if (this.options.bookedDays.length) {
-
       const booked = this.options.bookedDays
         .filter((d) => {
           if (d instanceof Array) {
