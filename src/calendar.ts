@@ -87,8 +87,8 @@ export class Calendar {
       </svg>`,
     },
     tooltipText: {
-      one: 'day',
-      other: 'days',
+      one: 'tag',
+      other: 'tage',
     },
     tooltipPluralSelector: null,
 
@@ -513,6 +513,8 @@ export class Calendar {
       if (!this.options.countLockedDays) {
         if (!this.options.disallowLockDaysInRange) {
           // First right date
+
+          console.log("this has been reached");
           let rightDate = this.datePicked[0].clone();
 
           // Max days setting
@@ -655,6 +657,13 @@ export class Calendar {
 
       if (holiday) {
         day.classList.add(style.isHoliday);
+
+        // if there is a holiday day in selection range, we mark all days after it as locked
+        if (this.datePicked.length > 0 && !this.bookedDayAfterSelection) {
+          if (this.datePicked[0].getTime() < date.getTime()) {
+            this.bookedDayAfterSelection = date.getTime();
+          }
+        }
       }
     }
 
