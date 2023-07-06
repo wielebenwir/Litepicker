@@ -47,6 +47,7 @@ export class Calendar {
     disallowLockDaysInRange: true,
     lockDaysInclusivity: '[]',
     countLockedDays: false,
+    countLockedDaysMax: 0,
 
     holidaysFormat: 'YYYY-MM-DD',
     holidays: [],
@@ -550,6 +551,56 @@ export class Calendar {
                 ) {
                   additionalDays = additionalDays + 1;
                   maxDays = maxDays + 1;
+                }
+              }
+            }
+          }
+        }
+      } else if (this.options.countLockedDaysMax !== 0) {
+        // First right date
+        let rightDate = this.datePicked[0].clone();
+
+        // Max days setting
+        let maxDays = this.options.maxDays;
+
+        // Maximum number of days to count
+        let maxDaysCount = this.options.countLockedDaysMax;
+
+        // Lockdays > picked date
+        const relevantLockDays = [];
+        const overbookableDays = [
+          // this.options.holidays,
+          this.options.lockDays,
+        ];
+
+        for (const daySet of overbookableDays) {
+          for (const item of daySet) {
+            if (this.datePicked[0].getTime() < item.getTime()) {
+              relevantLockDays.push(item);
+            }
+          }
+        }
+
+        // Goto right, and check for locked days to increase maxdays limit
+        while (maxDays > 0) {
+          maxDays = maxDays - 1;
+          // nextday from datepicked
+          rightDate = rightDate.add(1, 'day');
+
+          // check if date is lock date and not booked, partially booked or holiday
+          for (const item of relevantLockDays) {
+            if (item.getTime() === rightDate.getTime()) {
+              if (
+                !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
+                !this.dateIsPartiallyBooked(
+                  rightDate,
+                  this.options.partiallyBookedDaysInclusivity)
+              ) {
+                if (maxDaysCount <= 0) {
+                  additionalDays = additionalDays + 1;
+                  maxDays = maxDays + 1;
+                } else {
+                  maxDaysCount = maxDaysCount - 1;
                 }
               }
             }
