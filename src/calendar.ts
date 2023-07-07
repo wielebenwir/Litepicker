@@ -556,7 +556,7 @@ export class Calendar {
             }
           }
         }
-      } else if (this.options.countLockedDaysMax !== 0) {
+      } else if (this.options.countLockedDaysMax > 0) {
         // First right date
         let rightDate = this.datePicked[0].clone();
 
