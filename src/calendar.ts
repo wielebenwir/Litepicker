@@ -87,8 +87,8 @@ export class Calendar {
       </svg>`,
     },
     tooltipText: {
-      one: 'tag',
-      other: 'tage',
+      one: 'Tag',
+      other: 'Tage',
     },
     tooltipPluralSelector: null,
 
@@ -514,7 +514,6 @@ export class Calendar {
         if (!this.options.disallowLockDaysInRange) {
           // First right date
 
-          console.log("this has been reached");
           let rightDate = this.datePicked[0].clone();
 
           // Max days setting
