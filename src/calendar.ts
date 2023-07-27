@@ -511,7 +511,7 @@ export class Calendar {
       // Days we add to maxdays
       let additionalDays = 0;
 
-      if (!this.options.countLockedDays || this.options.countLockedDaysMax > 0) {
+      if (! this.options.countLockedDays || this.options.countLockedDaysMax > 0) {
         if (!this.options.disallowLockDaysInRange) {
           // First right date
           let rightDate = this.datePicked[0].clone();
@@ -558,6 +558,9 @@ export class Calendar {
                   } else if (this.options.countLockedDays && maxDaysCount >  0) {
                     // in that case the day is counted until the maxDaysCount is reached
                     maxDaysCount = maxDaysCount - 1 ;
+                  } else if (! this.options.countLockedDays) {
+                    // don't count any of the locked days
+                    additionalDays = additionalDays + 1;
                   }
                 }
               }
