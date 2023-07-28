@@ -525,7 +525,7 @@ export class Calendar {
           // Lockdays > picked date
           const relevantLockDays = [];
           const overbookableDays = [
-            // this.options.holidays,
+            this.options.holidays,
             this.options.lockDays,
           ];
 
@@ -560,6 +560,7 @@ export class Calendar {
                     maxDaysCount = maxDaysCount - 1 ;
                   } else if (! this.options.countLockedDays) {
                     // don't count any of the locked days
+                    console.log("Not counting anything");
                     additionalDays = additionalDays + 1;
                   }
                 }
