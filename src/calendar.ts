@@ -87,8 +87,8 @@ export class Calendar {
       </svg>`,
     },
     tooltipText: {
-      one: 'day',
-      other: 'days',
+      one: 'Tag',
+      other: 'Tage',
     },
     tooltipPluralSelector: null,
 
