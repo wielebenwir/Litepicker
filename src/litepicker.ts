@@ -764,7 +764,11 @@ export class Litepicker extends Calendar {
             day.classList.add(style.isBooked);
           } else if (dayData.partiallyBookedDay) {
             if (dayData.firstSlotBooked) {
-              day.classList.add(style.isPartiallyBookedStart);
+              if (dayData.holiday) {
+                day.classList.add(style.isLocked);
+              } else {
+                day.classList.add(style.isPartiallyBookedStart);
+              }
             }
             if (dayData.lastSlotBooked) {
               day.classList.add(style.isPartiallyBookedEnd);
