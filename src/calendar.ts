@@ -560,7 +560,6 @@ export class Calendar {
                     maxDaysCount = maxDaysCount - 1 ;
                   } else if (! this.options.countLockedDays) {
                     // don't count any of the locked days
-                    console.log("Not counting anything");
                     additionalDays = additionalDays + 1;
                   }
                 }
