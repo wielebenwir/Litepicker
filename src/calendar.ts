@@ -536,7 +536,9 @@ export class Calendar {
           let rightDate = this.datePicked[0].clone();
 
           // Max days setting
-          let maxDays = this.options.maxDays; // maximale Anzahl an buchbaren Tagen für eine Buchung -- commonsbooking:src/litepicker.js globalCalendarData['maxDays']
+          // maximale Anzahl an buchbaren Tagen für eine Buchung
+          // -- commonsbooking:src/litepicker.js globalCalendarData['maxDays']
+          let maxDays = this.options.maxDays;
 
           // Maximum number of days that are subtracted, when counting overbooked lockday-blocks
           let maxDaysCount = this.options.countLockedDaysMax;
@@ -558,6 +560,7 @@ export class Calendar {
 
           // Goto right, and check for locked days to increase maxdays limit
           while (maxDays > 0) {
+            // by default, deduct one day from the maximum number of days when going right
             maxDays = maxDays - 1;
             // nextday from datepicked
             rightDate = rightDate.add(1, 'day');
@@ -566,12 +569,14 @@ export class Calendar {
             for (const lockDay of relevantLockDays) {
               if (lockDay.getTime() === rightDate.getTime()) {
                 if (
-                  !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) && // TODO was ist booked day inclusivity
+                  // TODO was ist booked day inclusivity
+                  !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
                   !this.dateIsPartiallyBooked(
                     rightDate,
                     this.options.partiallyBookedDaysInclusivity)
                 ) {
                   if (this.options.countLockedDays && maxDaysCount <= 0) {
+                    /// in this case, the day is not counted because the maxDaysCount is reached
                     additionalDays = additionalDays + 1;
                     maxDays = maxDays + 1;
                   } else if (this.options.countLockedDays && maxDaysCount >  0) {
