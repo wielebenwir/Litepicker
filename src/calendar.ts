@@ -582,12 +582,6 @@ export class Calendar {
                   } else if (this.options.countLockedDays && maxDaysCount >  0) {
                     // in that case the day is counted until the maxDaysCount is reached
                     maxDaysCount = maxDaysCount - 1 ;
-                  } else if (! this.options.countLockedDays) {
-                    // TODO welchen Edge-Case gibt es sodass Überbuchung nicht erlaubt ist?
-                    // TODO kann das raus?
-
-                    // don't count any of the locked days
-                    additionalDays = additionalDays + 1;
                   }
                 }
               }
