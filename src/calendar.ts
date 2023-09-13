@@ -49,21 +49,21 @@ export class Calendar {
     lockDays: [],
     lockDaysInclusivity: '[]',
 
-    // CB Wordpress-Field: Allow locked day overbooking
+    /* CB Wordpress-Field: Allow locked day overbooking */
     disallowLockDaysInRange: true,
 
-    // CB Wordpress-Field: Count locked days when overbooking
+    /* CB Wordpress-Field: Count locked days when overbooking */
     countLockedDays: false,
-    // Schalter ob es gezälhlt werden soll
+    // Enables if number of days of lockday-blocks are counted
 
-    // CB Wordpress-Field: Count connected locked days as one
+    /* CB Wordpress-Field: Count connected locked days as one */
     countLockedDaysMax: 0,
-    // Cutoff, ab wann Tage eins überbuchbaren Blocks
-    // nicht mehr von der maximal erlaubten Anzahl von Buchungstagen
-    // abzogen werden.
-    // Beispiel:
-    //  0 => Jeder überbuchbare Tag eines Blocks wird abgezogen
-    //  1 => Maximal ein Tag wird für einen überbuchbaren Block abgezogen
+    // Cutoff, number of days a connected lockdays-block is interpreted
+    //  at most, when overbookable blocks are substracted from the
+    //  maximum booking duration.
+    // Example values:
+    //  0 => Normal. Each day of the overbookable lockday-block is substracted (as 1).
+    //  1 => Only 1 day is substracted, regardless of the size of the overbookable block of lockdays
     //  ...
 
     holidaysFormat: 'YYYY-MM-DD',
@@ -528,15 +528,14 @@ export class Calendar {
       // Days we add to maxdays
       let additionalDays = 0;
 
-      // Passiert nur bei Überbuchung mit Zählung
+      // This only happens when overbooking is allowed and counting on lockday-blocks is enabled via backend
       if (this.options.countLockedDays && this.options.countLockedDaysMax > 0) {
-        if (!this.options.disallowLockDaysInRange) { // TODO probably redundant
+        if (!this.options.disallowLockDaysInRange) { // TODO probably redundant, to be removed in backend also
 
           // First right date
           let rightDate = this.datePicked[0].clone();
 
-          // Max days setting
-          // maximale Anzahl an buchbaren Tagen für eine Buchung
+          // Maximum number of days for a booking duration
           // -- commonsbooking:src/litepicker.js globalCalendarData['maxDays']
           let maxDays = this.options.maxDays;
 
@@ -544,7 +543,6 @@ export class Calendar {
           let maxDaysCount = this.options.countLockedDaysMax;
 
           // Add all future holidays and lockdays
-          // Lockdays > picked date
           const relevantLockDays = [];
           const overbookableDays = [
             this.options.holidays,
@@ -558,7 +556,8 @@ export class Calendar {
             }
           }
 
-          // Goto right, and check for locked days to increase maxdays limit
+          // Goto right, and check if there are any locked days in the maxday range.
+          // If yes, then increase the maxdays limit
           while (maxDays > 0) {
             // by default, deduct one day from the maximum number of days when going right
             maxDays = maxDays - 1;
@@ -569,7 +568,6 @@ export class Calendar {
             for (const lockDay of relevantLockDays) {
               if (lockDay.getTime() === rightDate.getTime()) {
                 if (
-                  // TODO was ist booked day inclusivity
                   !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
                   !this.dateIsPartiallyBooked(
                     rightDate,
