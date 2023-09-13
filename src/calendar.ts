@@ -573,12 +573,12 @@ export class Calendar {
                     rightDate,
                     this.options.partiallyBookedDaysInclusivity)
                 ) {
-                  if (this.options.countLockedDays && maxDaysCount <= 0) {
-                    /// in this case, the day is not counted because the maxDaysCount is reached
+                  if (maxDaysCount <= 0) {
+                    /// in this case, the day is not counted because the maxDaysCount for a lockday-block is reached
                     additionalDays = additionalDays + 1;
                     maxDays = maxDays + 1;
-                  } else if (this.options.countLockedDays && maxDaysCount >  0) {
-                    // in that case the day is counted until the maxDaysCount is reached
+                  } else if (maxDaysCount >  0) {
+                    // in that case the day is counted until the maxDaysCount is reached for a lockday-block
                     maxDaysCount = maxDaysCount - 1 ;
                   }
                 }
