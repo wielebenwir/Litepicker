@@ -2,6 +2,7 @@ import { Calendar } from './calendar';
 import { DateTime } from './datetime';
 import * as style from './scss/main.scss';
 import { findNestedMonthItem, getOrientation, isMobile } from './utils';
+import {isInRange} from "./scss/main.scss";
 
 export class Litepicker extends Calendar {
   protected triggerElement;
@@ -762,19 +763,23 @@ export class Litepicker extends Calendar {
           const dayData = this.options.days[date.format(this.options.bookedDaysFormat)];
           if (dayData.bookedDay) {
             day.classList.add(style.isBooked);
-          } else if (dayData.partiallyBookedDay) {
+          } else if (dayData.partiallyBookedDay && ! (dayData.holiday || dayData.locked)) {
             if (dayData.firstSlotBooked) {
-              if (dayData.holiday) {
-                day.classList.add(style.isLocked);
-              } else {
-                day.classList.add(style.isPartiallyBookedStart);
-              }
+              day.classList.add(style.isPartiallyBookedStart);
             }
             if (dayData.lastSlotBooked) {
               day.classList.add(style.isPartiallyBookedEnd);
             }
           }
-          day.classList.add(style.isInRange);
+          // remove the holiday and locked classes -> can display is in range
+          if (! this.options.disallowLockDaysInRange) {
+            if (dayData.holiday) {
+              day.classList.remove(style.isHoliday);
+            } else if (dayData.locked) {
+              day.classList.remove(style.isLocked);
+            }
+            day.classList.add(isInRange);
+          }
         }
 
         d.className = day.className;
