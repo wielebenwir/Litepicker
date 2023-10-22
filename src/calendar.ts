@@ -22,7 +22,10 @@ export class Calendar {
     minDate: null,
     maxDate: null,
     minDays: null,
+
+    /* CB Wordpress-Field: Maximum allowed days of booking duration */
     maxDays: null,
+
     selectForward: false,
     selectBackward: false,
     splitView: false,
@@ -44,9 +47,24 @@ export class Calendar {
 
     lockDaysFormat: 'YYYY-MM-DD',
     lockDays: [],
-    disallowLockDaysInRange: true,
     lockDaysInclusivity: '[]',
+
+    /* CB Wordpress-Field: Allow locked day overbooking */
+    disallowLockDaysInRange: true,
+
+    /* CB Wordpress-Field: Count locked days when overbooking */
     countLockedDays: false,
+    // Enables if number of days of lockday-blocks are counted
+
+    /* CB Wordpress-Field: Count connected locked days as one */
+    countLockedDaysMax: 0,
+    // Cutoff, number of days a connected lockdays-block is interpreted
+    //  at most, when overbookable blocks are substracted from the
+    //  maximum booking duration.
+    // Example values:
+    //  0 => Normal. Each day of the overbookable lockday-block is substracted (as 1).
+    //  1 => Only 1 day is substracted, regardless of the size of the overbookable block of lockdays
+    //  ...
 
     holidaysFormat: 'YYYY-MM-DD',
     holidays: [],
@@ -510,46 +528,56 @@ export class Calendar {
       // Days we add to maxdays
       let additionalDays = 0;
 
-      if (!this.options.countLockedDays) {
-        if (!this.options.disallowLockDaysInRange) {
-          // First right date
-          let rightDate = this.datePicked[0].clone();
+      // This only happens when overbooking is allowed and counting on lockday-blocks is enabled via backend
+      if (this.options.countLockedDays && this.options.countLockedDaysMax > 0) {
+        // First right date
+        let rightDate = this.datePicked[0].clone();
 
-          // Max days setting
-          let maxDays = this.options.maxDays;
+        // Maximum number of days for a booking duration
+        // -- commonsbooking:src/litepicker.js globalCalendarData['maxDays']
+        let maxDays = this.options.maxDays;
 
-          // Lockdays > picked date
-          const relevantLockDays = [];
-          const overbookableDays = [
-            // this.options.holidays,
-            this.options.lockDays,
-          ];
+        // Maximum number of days that are subtracted, when counting overbooked lockday-blocks
+        let maxDaysCount = this.options.countLockedDaysMax;
 
-          for (const daySet of overbookableDays) {
-            for (const item of daySet) {
-              if (this.datePicked[0].getTime() < item.getTime()) {
-                relevantLockDays.push(item);
-              }
+        // Add all future holidays and lockdays
+        const relevantLockDays = [];
+        const overbookableDays = [
+          this.options.holidays,
+          this.options.lockDays,
+        ];
+        for (const daySet of overbookableDays) {
+          for (const item of daySet) {
+            if (this.datePicked[0].getTime() < item.getTime()) {
+              relevantLockDays.push(item);
             }
           }
+        }
 
-          // Goto right, and check for locked days to increase maxdays limit
-          while (maxDays > 0) {
-            maxDays = maxDays - 1;
-            // nextday from datepicked
-            rightDate = rightDate.add(1, 'day');
+        // Goto right, and check if there are any locked days in the maxday range.
+        // If yes, then increase the maxdays limit
+        while (maxDays > 0) {
+          // by default, deduct one day from the maximum number of days when going right
+          maxDays = maxDays - 1;
+          // nextday from datepicked
+          rightDate = rightDate.add(1, 'day');
 
-            // check if date is lock date and not booked, partially booked or holiday
-            for (const item of relevantLockDays) {
-              if (item.getTime() === rightDate.getTime()) {
-                if (
-                  !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
-                  !this.dateIsPartiallyBooked(
-                    rightDate,
-                    this.options.partiallyBookedDaysInclusivity)
-                ) {
+          // check if date is lock date and not booked, partially booked or holiday
+          for (const lockDay of relevantLockDays) {
+            if (lockDay.getTime() === rightDate.getTime()) {
+              if (
+                !this.dateIsBooked(rightDate, this.options.bookedDaysInclusivity) &&
+                !this.dateIsPartiallyBooked(
+                  rightDate,
+                  this.options.partiallyBookedDaysInclusivity)
+              ) {
+                if (maxDaysCount <= 0) {
+                  /// in this case, the day is not counted because the maxDaysCount for a lockday-block is reached
                   additionalDays = additionalDays + 1;
                   maxDays = maxDays + 1;
+                } else if (maxDaysCount >  0) {
+                  // in that case the day is counted until the maxDaysCount is reached for a lockday-block
+                  maxDaysCount = maxDaysCount - 1 ;
                 }
               }
             }
