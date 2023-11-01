@@ -528,8 +528,13 @@ export class Calendar {
       // Days we add to maxdays
       let additionalDays = 0;
 
-      // This only happens when overbooking is allowed and counting on lockday-blocks is enabled via backend
-      if (this.options.countLockedDays && this.options.countLockedDaysMax > 0) {
+      // This only happens when overbooking is allowed
+      // and if there is either no counting of the overbooked days
+      // or a maximum number of overbooked days that will be counted towards the maximum booking duration.
+      // If this is not the case, every overbooked day is counted as +1 towards the maximum booking duration
+      if (! this.options.disallowLockDaysInRange
+          && (this.options.countLockedDaysMax > 0 || ! this.options.countLockedDays)
+      ) {
         // First right date
         let rightDate = this.datePicked[0].clone();
 
@@ -571,8 +576,9 @@ export class Calendar {
                   rightDate,
                   this.options.partiallyBookedDaysInclusivity)
               ) {
-                if (maxDaysCount <= 0) {
+                if (maxDaysCount <= 0 || ! this.options.countLockedDays) {
                   /// in this case, the day is not counted because the maxDaysCount for a lockday-block is reached
+                  // or because the lockdays are not counted at all
                   additionalDays = additionalDays + 1;
                   maxDays = maxDays + 1;
                 } else if (maxDaysCount >  0) {
