@@ -11,8 +11,5 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
-    allow:
-      - dependency-name: '*'
-        dependency-type: 'production'
     commit-message:
       include: 'scope'
