@@ -249,7 +249,7 @@ export class Litepicker extends Calendar {
 
               // portrait
               default:
-                this.options.numberOfMonths = 1;
+                this.options.numberOfMonths = this.options.mobileCalendarMonthCount;
                 this.options.numberOfColumns = 1;
                 break;
             }
