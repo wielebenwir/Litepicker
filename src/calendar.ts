@@ -49,7 +49,7 @@ export class Calendar {
     lockDays: [],
     lockDaysInclusivity: '[]',
 
-    /* Set by CB. Defines amount of months shown in mobile portrait mode.
+    /* Programmatically set by CB. Defines amount of months shown in mobile portrait mode.
     Modified through commonsbooking_mobile_calendar_month_count filter hook.
     Defaults to 1 */
     mobileCalendarMonthCount: 1,
