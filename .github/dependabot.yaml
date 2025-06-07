@@ -12,4 +12,5 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
+      prefix: 'npm'
       include: 'scope'
