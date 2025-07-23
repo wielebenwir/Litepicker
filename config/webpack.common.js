@@ -15,7 +15,7 @@ const banner = `
     Copyright 2019-${new Date().getFullYear()} Rinat G.
     
     Hash: [hash]
-    Generated on: ${Date.now()}
+    Generated on: ${(new Date()).toISOString()}
     `;
 
 module.exports = {
