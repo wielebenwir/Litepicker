@@ -6,11 +6,15 @@
   "types": "./dist/js/index.d.ts",
   "scripts": {
     "prod": "webpack --config config/webpack.prod.js && webpack --config config/webpack.nocss.js",
+    "prepare": "npm run prod",
     "dev": "webpack --config config/webpack.dev.js",
     "docs": "webpack --config config/webpack.docs.js",
     "watch": "webpack -w --config config/webpack.dev.js",
     "test": "jest"
   },
+  "files": [
+    "dist/js/main.js"
+  ],
   "keywords": [
     "datepicker",
     "date",
