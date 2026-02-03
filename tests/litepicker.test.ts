@@ -184,6 +184,7 @@ test('Litepicker date range - setOptions', () => {
     startDate,
     endDate,
     inlineMode: true,
+    onChangeMonth: () => {}
   });
 
   expect(picker.getStartDate().toDateString() === startDate.toDateString()
