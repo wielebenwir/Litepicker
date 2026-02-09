@@ -62,7 +62,7 @@
     "typescript": "^3.9.5",
     "webpack": "^5.88.2",
     "webpack-cli": "^6.0.1",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^6.0.1"
   },
   "browserslist": [
     "defaults",
