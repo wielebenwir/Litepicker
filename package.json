@@ -1,5 +1,5 @@
 {
-  "name": "litepicker",
+  "name": "@commonsbooking/litepicker",
   "version": "1.5.7",
   "description": "Date range picker - lightweight, no dependencies",
   "main": "./dist/js/main.js",
@@ -27,7 +27,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/wakirin/litepicker.git"
+    "url": "https://github.com/wielebenwir/litepicker.git"
   },
   "author": {
     "name": "Rinat G.",
