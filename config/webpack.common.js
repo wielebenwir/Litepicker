@@ -48,6 +48,13 @@ module.exports = {
                 // eslint-disable-next-line no-underscore-dangle
                 var lastInsertedElement = window._lastElementInsertedByStyleLoader;
 
+                /* This makes it possible to set nonce to inline style elements.
+                 * This is to use this library without the need to set the CSP header "style-src" to "unsafe-inline". */
+                var nonce = window.__cspNonce;
+                if (nonce) {
+                  element.setAttribute('nonce', nonce);
+                }
+
                 if (!window.disableLitepickerStyles) {
                   if (!lastInsertedElement) {
                     parent.insertBefore(element, parent.firstChild);
