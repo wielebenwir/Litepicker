@@ -1,6 +1,6 @@
 {
   "name": "@commonsbooking/litepicker",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "description": "Date range picker - lightweight, no dependencies",
   "main": "./dist/js/main.js",
   "types": "./dist/js/index.d.ts",
